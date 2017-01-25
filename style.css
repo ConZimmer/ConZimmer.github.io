@@ -1,0 +1,130 @@
+/*
+dark grey blue 545f66
+grey blue 829399
+light blue d0f4ea
+bcd4de
+light green e8fcc2
+green b1cc74
+*/
+body{
+  background-color: #bcd4de;
+}
+
+aside{
+	float: right;
+	background-color: #e8fcc2;
+	width: 20%;
+	padding: 1em;
+}
+
+article{
+	width:80%;
+}
+
+
+nav ul{
+  background-color: #545f66;
+  list-style-type: none;
+  margin: 0px;
+  padding: 1.5em;
+}
+
+nav ul li{
+  display: inline;
+  margin: 0px;
+  padding:1.5em;
+}
+
+nav li:hover{
+  background-color: #e8fcc2;
+}
+
+nav a{
+  color: #b1cc74;
+  text-decoration: none;
+}
+/*
+.navList{
+  background-color: #545f66;
+  list-style-type: none;
+  margin: 0px;
+  padding: 1.5em;
+}
+
+.navList li{
+  display: inline;
+  margin: 0px;
+  padding:1.5em;
+}
+
+.navList li:hover{
+  background-color: #e8fcc2;
+}
+
+.navList li a{
+  color: #b1cc74;
+  text-decoration: none;
+}*/
+
+
+#content{
+  text-align: center;
+}
+
+#mainContent{
+  margin-top: 0px;
+  padding: 1.5em;
+  background-color: #b1cc74;
+  overflow: auto;
+}
+
+#indexPageIcon{
+  width: 100%;
+  height: auto;
+  float: right;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+#imageDiv{
+	width: 20%;
+	height: auto;
+	overflow: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#WiiUImage{
+	width: 30%;
+	height:auto;
+}
+
+#WelcomeText{
+  width: auto;
+  text-align: center;
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 5px;
+    text-align: center;
+}
+
+th{
+  background-color: #545f66;
+  color: #b1cc74;
+}
+
+
+table {
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #e8fcc2
+}
