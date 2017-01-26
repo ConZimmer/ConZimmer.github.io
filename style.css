@@ -18,7 +18,9 @@ aside{
 }
 
 article{
-	width:80%;
+	width:60%;
+	margin-left: 10%;
+	margin-right: 30%;
 }
 
 
@@ -43,29 +45,6 @@ nav a{
   color: #b1cc74;
   text-decoration: none;
 }
-/*
-.navList{
-  background-color: #545f66;
-  list-style-type: none;
-  margin: 0px;
-  padding: 1.5em;
-}
-
-.navList li{
-  display: inline;
-  margin: 0px;
-  padding:1.5em;
-}
-
-.navList li:hover{
-  background-color: #e8fcc2;
-}
-
-.navList li a{
-  color: #b1cc74;
-  text-decoration: none;
-}*/
-
 
 #content{
   text-align: center;
@@ -97,8 +76,18 @@ nav a{
 }
 
 #WiiUImage{
-	width: 30%;
+	width: 40%;
 	height:auto;
+}
+
+#XBoxOneImage{
+	width: 40%;
+	height: auto;
+}
+
+#PS4Image{
+	width: 40%;
+	height: auto;
 }
 
 #WelcomeText{
@@ -121,10 +110,14 @@ th{
   color: #b1cc74;
 }
 
-
 table {
-    width: 50%;
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
     background-color: #e8fcc2
 }
+
+#indexPageTable{
+	width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
