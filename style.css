@@ -23,6 +23,12 @@ article{
 	margin-right: 30%;
 }
 
+article > h1{
+	text-align: center;
+	font-size: 200%;
+	border-bottom: 1px solid black;
+}
+
 
 nav ul{
   background-color: #545f66;
@@ -76,17 +82,17 @@ nav a{
 }
 
 #WiiUImage{
-	width: 40%;
+	width: 100%;
 	height:auto;
 }
 
 #XBoxOneImage{
-	width: 40%;
+	width: 100%;
 	height: auto;
 }
 
 #PS4Image{
-	width: 40%;
+	width: 100%;
 	height: auto;
 }
 
