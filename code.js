@@ -34,13 +34,14 @@ function getLinesInfo(txt){
 			numNonEmptyLines:0
 		};
 	let lines = txt.split('\n');
+	let linesLength = lines.length;
 	if(lines[lines.length - 1] === "")
 		lines.pop();
 	console.log(lines);
 	let largestLine = largestLineLength(lines);
 	let numNonEmptyLines = lines.length - findNumEmptyLines(lines);
 	return {
-		numLines: lines.length, 
+		numLines: linesLength, 
 		largestLine: largestLine,
 		numNonEmpty: numNonEmptyLines
 	};
@@ -210,6 +211,8 @@ function isPalindrome(word){
 
 function getAverageWordLength(words){
 	let total = 0; 
+	if(words.length === 0)
+		return 0;
 	for(let i = 0; i < words.length; i++)
 	{
 		total += words[i].length;
