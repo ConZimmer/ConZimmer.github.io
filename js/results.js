@@ -50,10 +50,9 @@
         {districtName: "r4", votes: 700000}
     ];*/
 
-	var chartsDrawn = false;
+var chartsDrawn = false;
 
 function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
-	console.log(data);
 	let padding = 10;
 
 	let color = d3.scaleOrdinal()
@@ -149,6 +148,7 @@ function drawBubbleChart(data, idDiv){
 	var div = d3.select(idDiv);
 
 
+	//var svg = d3.select("body").select(idDiv).select("svg"),
 	var svg = d3.select(idDiv).select("svg"),
 	width = +svg.attr("width"),
 		height = +svg.attr("height");
@@ -231,26 +231,37 @@ function drawCharts(choices, totalVotes, districtData){
 	for(let i in choices){
 		dataTotal[0][choices[i]] = totalVotes[choices[i]];
 	}
-	let data = [];
+	let dataDistrict = [];
 	let dataBubble = [];
 	for(let i in districtData){
 		let resp = districtData[i][0].response;
 		let respObj = JSON.parse(resp);
-		data.push({districtName:respObj.DistrictName, yes: respObj.TotalVotes.yes, no: respObj.TotalVotes.no, maybe: respObj.TotalVotes.maybe});
-		let dataEntryBubbleChart = {districtName: respObj.DistrictName, votes: respObj.TotalVotes.yes + respObj.TotalVotes.no + respObj.TotalVotes.maybe};
+		let districtVotes = respObj.TotalVotes;
+		let dataEntryDistrict = {districtName: respObj.DistrictName};
+		let sumVotes = 0;
+		for(let j in choices){
+			dataEntryDistrict[choices[j]] = districtVotes[choices[j]];
+			sumVotes += districtVotes[choices[j]];
+		}
+		if(sumVotes != 0)
+			dataDistrict.push(dataEntryDistrict);
+		let dataEntryBubbleChart = {districtName: respObj.DistrictName, votes: sumVotes};
 		if(dataEntryBubbleChart.votes != 0)
 			dataBubble.push(dataEntryBubbleChart);
 	}
+	console.log("data district ", dataDistrict );
 	/*console.log(dataTotal);
 	console.log(data); 
 	console.log(dataBubble);*/ 
 	let colors = ["#98abc5", "#8a89a6", "#7b6888"];
-	drawDonutCharts(74, 44,  data, "#districtResultCharts", choices, colors);
+	drawDonutCharts(74, 44,  dataDistrict, "#districtResultCharts", choices, colors);
 	drawDonutCharts(150,100, dataTotal, "#totalResults", choices, colors );
 	if(dataBubble.length != 0)
 		drawBubbleChart(dataBubble, "#bubbleChart");
 	chartsDrawn = true; 
 }
+
+
 
 function poll(){
 	   setTimeout (function () {
@@ -268,28 +279,89 @@ function deleteCharts(){
 	
 }
 
+function removeMessage(){
+	$(".resultsMessage").remove();
+}
+
+function displayMessage(message){
+	$("#resultsSection").append($('<h1>').text(message).addClass("resultsMessage"));
+}
+
+function addContainersForCharts(){
+	$("#resultsSection").append($('<h5>').text("Total Results"));
+	$("#resultsSection").append($('<div>').attr("id", "totalResults"));
+	$("#resultsSection").append($('<h5>').text("Per District Results"));
+	$("#resultsSection").append($('<div>').attr("id","districtResultCharts"));
+	$("#resultsSection").append($('<h5>').text("Vote Counts Per District"));
+	$("#resultsSection").append($('<div>').attr("id","bubbleChart"));
+	d3.select("#bubbleChart").append("svg").attr("width","400").attr("height","400").attr("text-anchor","middle").attr("font-size","10");
+}
+
+function noVotes(voteOptions, votes){
+	let totalCount = 0; 
+	for(let i in voteOptions){
+		totalCount += votes[voteOptions[i]];
+	}
+	
+	return totalCount ===0;
+}
+
+function electionEnded(endDateString){
+	let endDate = new Date(endDateString);
+	let currentDate = new Date().getTime();
+	return currentDate > endDate
+}
+
+var baseUrl = "https://blockvotenode2.mybluemix.net";
+//var baseUrl = ""
+var wasDisplayingMessage = true;
+var alreadyDisplayingMessage = false;
+
+//perform multiple ajax calls in a loop if the server responds with error.
 function multAjaxCallResults(count, finalCount){
 	if(count < finalCount){
 		$.ajax({
-			url:"https://blockvotenode2.mybluemix.net/results",
-			//url:"results",
+			url:baseUrl + "/results",
 			crossDomain: true,
 			success:function(resp){
 				if(resp.error == null){
 					let response = JSON.parse(resp.response);
-					let vOp = response.VoteOptions;
+					let voteOptions = response.VoteOptions;
+					
+					if(response.AllowLiveResults === "no" && !electionEnded(response.EndTime)){
+						if(!alreadyDisplayingMessage)
+							displayMessage("Come back when the election is over to see results");
+						wasDisplayingMessage = true;
+						alreadyDisplayingMessage = true;
+						poll();
+						return;
+					}
+					
+					if(noVotes(voteOptions, response.TotalVotes)){
+						if(!alreadyDisplayingMessage)
+							displayMessage("No Votes Yet");
+						wasDisplayingMessage = true;
+						alreadyDisplayingMessage = true;
+						poll();
+						return;
+					}
+					if(wasDisplayingMessage){
+						removeMessage();
+						addContainersForCharts();
+						wasDisplayingMessage = false;
+					}
+					
 					let districts = response.Districts;
 					let calls = [];
 					for(let i in districts){
 						
 						let call = $.ajax({
 							type:"POST",
-							//url: "readDistrict",
-							url:"https://blockvotenode2.mybluemix.net/readDistrict",
+							url:baseUrl + "/readDistrict",
 							crossDomain: true,
 							data: { "district":districts[i]},
 							failure:function(obj, status, textStatus){
-								console.log("problem getting district data");
+								console.log("failure when getting district data");
 							}
 							
 						});
@@ -310,7 +382,7 @@ function multAjaxCallResults(count, finalCount){
 						}
 						if(dataOK){
 							deleteCharts();
-							drawCharts(response.VoteOptions, response.TotalVotes , arguments);
+							drawCharts(voteOptions, response.TotalVotes , arguments);
 							poll();
 						}
 					});
@@ -320,7 +392,9 @@ function multAjaxCallResults(count, finalCount){
 					multAjaxCallResults(count, finalCount);
 				}
 			},
-			//failure:failure
+			failure:function(obj, status, textStatus){
+				console.log("failure when getting results");
+			}
 		});
 	}
 }
