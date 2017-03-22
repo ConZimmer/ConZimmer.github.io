@@ -112,7 +112,11 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 			.attr("class", "tooltip")
 			.style("position", "absolute")
 			.style("z-index", "10")
-			.style("visibility", "hidden");
+			.style("visibility", "hidden")
+			.style("background-color","white")
+			.style("color","black")
+			.style("border-radius", "10px")
+			.style("padding", "10px");
 	}
 
 
@@ -128,7 +132,7 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 			tooltip.text(d.data.name + ": " + d.value);
 			return tooltip.style("visibility", "visible");
 		})
-		.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY)+"px").style("left",(d3.event.pageX)+"px");})
+		.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY -150)+"px").style("left",(d3.event.pageX - 300)+"px");})
 		//.on("mousemove", function(event){return tooltip.style("top", (d3.select(this).attr("cy")-10)+"px").style("left",(d3.select(this).attr("cx")+10+10)+"px");})
 		.on("mouseout", function(){
 			d3.select(this).style("stroke", "white");
@@ -185,7 +189,11 @@ function drawBubbleChart(data, idDiv){
 			.attr("class", "tooltip")
 			.style("position", "absolute")
 			.style("z-index", "10")
-			.style("visibility", "hidden");
+			.style("visibility", "hidden")
+			.style("background-color","white")
+			.style("color","black")
+			.style("border-radius", "10px")
+			.style("padding", "10px");
 	}
 
 	var node = svg.selectAll(".node")
@@ -203,7 +211,7 @@ function drawBubbleChart(data, idDiv){
 		tooltip.text("Voter count: " + d.value);
 		return tooltip.style("visibility", "visible");
 	})
-	.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY - 10)+"px").style("left",(d3.event.pageX + 10)+"px");})
+	.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY  -150)+"px").style("left",(d3.event.pageX - 300)+"px");})
 	.on("mouseout", function(){
 		d3.select(this).style("stroke", "white");
 		return tooltip.style("visibility", "hidden");
@@ -278,10 +286,15 @@ function deleteCharts(){
 	node.remove();
 	
 }
-
+var timeout;
+function emptyResultsSection(){
+	$("#resultsSection").empty();
+	clearTimeout(timeout);
+}
+/*
 function removeMessage(){
 	$(".resultsMessage").remove();
-}
+}*/
 
 function displayMessage(message){
 	$("#resultsSection").append($('<h1>').text(message).addClass("resultsMessage"));
@@ -306,16 +319,38 @@ function noVotes(voteOptions, votes){
 	return totalCount ===0;
 }
 
-function electionEnded(endDateString){
+function afterDate(endDateString){
 	let endDate = new Date(endDateString);
 	let currentDate = new Date().getTime();
 	return currentDate > endDate
 }
 
+function addCountDown(endTimeStr){
+	$("#resultsSection").append($('<h1>').attr("id","countDown"));
+	let tick = function(){
+		let date1 = new Date(endTimeStr);
+		let date2 = new Date();
+		let timeDiff = date1.getTime()- date2.getTime();
+		if(timeDiff > 0){
+			let days = Math.floor(timeDiff / (1000 * 3600 * 24));
+			timeDiff -= (days * (1000 * 3600 * 24));
+			let hours = Math.floor(timeDiff / (1000 * 3600));
+			timeDiff -= hours *1000 * 3600;
+			let mins = Math.floor((timeDiff / ( 1000 * 60)));
+			timeDiff -= mins * 1000 * 60;
+			let sec = Math.floor(timeDiff / 1000);
+			$("#countDown").text(days +":" +hours + ":" + mins + ":" + sec );
+		}
+		timeout = setTimeout(tick, 1000);
+	}
+	tick();
+}
+
 var baseUrl = "https://blockvotenode2.mybluemix.net";
 //var baseUrl = ""
 var wasDisplayingMessage = true;
-var alreadyDisplayingMessage = false;
+var displayVoitingStartsMessage = false;
+var display
 
 //perform multiple ajax calls in a loop if the server responds with error.
 function multAjaxCallResults(count, finalCount){
@@ -328,25 +363,34 @@ function multAjaxCallResults(count, finalCount){
 					let response = JSON.parse(resp.response);
 					let voteOptions = response.VoteOptions;
 					
-					if(response.AllowLiveResults === "no" && !electionEnded(response.EndTime)){
-						if(!alreadyDisplayingMessage)
-							displayMessage("Come back when the election is over to see results");
+					if(!afterDate(response.StartTime)){
+						emptyResultsSection();
+						displayMessage("Voting starts in");
+						addCountDown(response.StartTime);
 						wasDisplayingMessage = true;
-						alreadyDisplayingMessage = true;
+						poll();
+						return;
+					}
+					
+					if(response.AllowLiveResults === "no" && !afterDate(response.EndTime)){
+						emptyResultsSection();
+						displayMessage("Come back when the election is over to see results");
+						displayMessage("Time to end of election");
+						addCountDown(response.EndTime);
+						wasDisplayingMessage = true;
 						poll();
 						return;
 					}
 					
 					if(noVotes(voteOptions, response.TotalVotes)){
-						if(!alreadyDisplayingMessage)
-							displayMessage("No Votes Yet");
+						emptyResultsSection();
+						displayMessage("No Votes Yet");
 						wasDisplayingMessage = true;
-						alreadyDisplayingMessage = true;
 						poll();
 						return;
 					}
 					if(wasDisplayingMessage){
-						removeMessage();
+						emptyResultsSection();
 						addContainersForCharts();
 						wasDisplayingMessage = false;
 					}
