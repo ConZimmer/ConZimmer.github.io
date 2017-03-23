@@ -1,0 +1,30 @@
+
+   /* body {
+        font: 10px sans-serif;
+    }*/
+	
+    #totalResults > svg  {
+        margin: 10px 0 0 10px;
+    }
+	
+	#districtResultCharts > svg{
+		margin: 10px 0 0 10px;
+	}
+
+    .arc {
+        stroke: #fff;
+    }
+	
+	#bubbleChart > svg{
+		/*width: 70%;*/
+		margin-left:15%;
+		margin-right: 15%;
+	}
+/*
+    .tooltip{
+        position: absolute;
+    }*/
+/*
+	#resultsSection{
+		position: static;
+	}*/

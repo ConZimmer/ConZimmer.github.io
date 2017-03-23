@@ -76,8 +76,9 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 	if(!chartsDrawn){
 		let legend = d3.select("body").select(idDiv).append("svg")
 			.attr("class", "legend")
-			.attr("width", radius)
-			.attr("height", radius * 2)
+			.attr("width", radius * 1.5)
+			//.attr("height", radius * 2)
+			.attr("height", radius)
 			.selectAll("g")
 			.data(color.domain().slice().reverse())
 			.enter().append("g")
@@ -132,7 +133,8 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 			tooltip.text(d.data.name + ": " + d.value);
 			return tooltip.style("visibility", "visible");
 		})
-		.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY -150)+"px").style("left",(d3.event.pageX - 300)+"px");})
+		//.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY -150)+"px").style("left",(d3.event.pageX - 300)+"px");})
+		.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY - 15)+"px").style("left",(d3.event.pageX +10)+"px");})
 		//.on("mousemove", function(event){return tooltip.style("top", (d3.select(this).attr("cy")-10)+"px").style("left",(d3.select(this).attr("cx")+10+10)+"px");})
 		.on("mouseout", function(){
 			d3.select(this).style("stroke", "white");
@@ -150,13 +152,12 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 
 function drawBubbleChart(data, idDiv){
 	var div = d3.select(idDiv);
-
-
+	
 	//var svg = d3.select("body").select(idDiv).select("svg"),
 	var svg = d3.select(idDiv).select("svg"),
 	width = +svg.attr("width"),
 		height = +svg.attr("height");
-
+	
 	var format = d3.format(",d");
 
 	var colorBubbleChart = d3.scaleOrdinal(d3.schemeCategory20c);
@@ -211,7 +212,7 @@ function drawBubbleChart(data, idDiv){
 		tooltip.text("Voter count: " + d.value);
 		return tooltip.style("visibility", "visible");
 	})
-	.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY  -150)+"px").style("left",(d3.event.pageX - 300)+"px");})
+	.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY - 15)+"px").style("left",(d3.event.pageX +10)+"px");})
 	.on("mouseout", function(){
 		d3.select(this).style("stroke", "white");
 		return tooltip.style("visibility", "hidden");
@@ -307,7 +308,12 @@ function addContainersForCharts(){
 	$("#resultsSection").append($('<div>').attr("id","districtResultCharts"));
 	$("#resultsSection").append($('<h5>').text("Vote Counts Per District"));
 	$("#resultsSection").append($('<div>').attr("id","bubbleChart"));
-	d3.select("#bubbleChart").append("svg").attr("width","400").attr("height","400").attr("text-anchor","middle").attr("font-size","10");
+	let widthBubbleChart = 	0.7 * $( ".row.section-intro").width();
+	console.log(widthBubbleChart);
+	let leftMargin = 0.15 * $(window).width();
+	let rightMargin = 0.15 * $(window).width();
+	//d3.select("#bubbleChart").append("svg").attr("width","400").attr("height","400").attr("text-anchor","middle").attr("font-size","10");
+	d3.select("#bubbleChart").append("svg").attr("width", widthBubbleChart).attr("height","400").attr("text-anchor","middle").attr("font-size","10");
 }
 
 function noVotes(voteOptions, votes){

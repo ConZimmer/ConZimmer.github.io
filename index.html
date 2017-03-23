@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/vendor.css">
     <link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="css/results.css">
     <!-- script
     ================================================== -->
     <script src="js/modernizr.js"></script>
@@ -212,7 +213,7 @@
                     <li class="current"><a class="smoothscroll" href="#intro" title="">Home</a></li>
                     <li><a class="smoothscroll" href="#process" title="">Process</a></li>
                     <li><a class="smoothscroll" href="#features" title="">Features</a></li>
-                    <li><a href="resultsPage.html" title="">Results</a></li>
+                    <li><a class = "smoothscroll" href="#pricing" title="">Results</a></li>
                     <li><a class="smoothscroll" href="#faq" title="">FAQ</a></li>
                 </ul>
             </nav>
@@ -336,14 +337,19 @@
     <!-- /features -->
     <!-- pricing
     ================================================== -->
-    <!--<section id="pricing">
-        <div class="row section-intro">
+    <section id="pricing">
+        <div class="row section-intro" style = "position:static">
             <div class="col-twelve with-bottom-line">
                 <h1>Live Results:</h1>
                 <h5></h5>
             </div>
             <div class="row section-intro">
             </div>
+			
+			<!-- div for results -->
+			<div id="resultsSection"></div>
+			
+			
             <!-- map -->
             <!--<h5>Total Results</h5>        
             <div id="chart_div" class="google_chart" style="width: 500px; height: 200px;"></div>
@@ -356,7 +362,7 @@
             <h5>Aberdeen</h5>
             <div id="chart_aberdeen" class="google_chart" style="width: 500px; height: 200px;"></div>
             <h5>Dundee</h5>
-            <div id="chart_dundee" class="google_chart" style="width: 500px; height: 200px;"></div>
+            <div id="chart_dundee" class="google_chart" style="width: 500px; height: 200px;"></div>-->
 
         </div>
         <div class="row pricing-content">
@@ -366,24 +372,24 @@
                     </div>
                 </div>
                 <!-- /price-block -->
-                <!--<div class="bgrid">
+                <div class="bgrid">
                     <div class="price-block primary">
                     </div>
                 </div>
                 <!-- /price-block -->
-                <!--<div class="bgrid">
+                <div class="bgrid">
                     <div class="price-block">
                     </div>
                 </div>
                 <!-- /price-block -->
-                <!--<div class="bgrid">
+                <div class="bgrid">
                 </div>
                 <!-- /price-block -->
-            <!--</div>
+            </div>
             <!-- /pricing-tables -->
-        <!--</div>
+        </div>
         <!-- /pricing-content -->
-    <!--</section>
+    </section>
     <!-- /pricing -->
     <!-- faq
     ================================================== -->
@@ -460,6 +466,7 @@
     <script src="js/jquery-migrate-1.2.1.min.js"></script>
     <script src="js/plugins.js"></script>
     <script src="js/main.js"></script>
+	<script src="js/results.js"></script>
 </body>
 
 </html>
