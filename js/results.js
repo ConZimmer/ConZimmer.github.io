@@ -49,6 +49,22 @@
         {districtName: "r3", votes: 1000000},
         {districtName: "r4", votes: 700000}
     ];*/
+	
+
+//http://jnnnnn.github.io/category-colors-constrained.html
+var colors = ["#6FD08C", "#FFED7C", "D33F49", "#fec7f8", "#3957ff", "#c203c8" ,
+"#0bf0e9", "#fd9b39", "#888593", "#906407", "#98ba7f", "#fe6794", "#10b0ff", "#ac7bff", 
+"#fee7c0", "#964c63", "#1da49c", "#0ad811", "#bbd9fd", "#fe6cfe", "#297192", "#d1a09c", 
+"#78579e", "#81ffad", "#739400", "#ca6949", "#d9bf01", "#646a58", "#d5097e", "#bb73a9", 
+"#ccf6e9", "#9cb4b6", "#b6a7d4", "#9e8c62", "#6e83c8", "#01af64", "#a71afd", "#cfe589", 
+"#d4ccd1", "#fd4109", "#bf8f0e", "#2f786e", "#4ed1a5", "#d8bb7d", "#a54509", "#6a9276", 
+"#a4777a", "#fc12c9", "#606f15", "#3cc4d9", "#f31c4e", "#73616f", "#f097c6", "#fc8772", 
+"#92a6fe", "#875b44", "#699ab3", "#94bc19", "#7d5bf0", "#d24dfe", "#c85b74", "#68ff57", 
+"#b62347", "#994b91", "#646b8c", "#977ab4", "#d694fd", "#c4d5b5", "#fdc4bd", "#1cae05", 
+"#7bd972", "#e9700a", "#d08f5d", "#8bb9e1", "#fde945", "#a29d98", "#1682fb", "#9ad9e0", 
+"#d6cafe", "#8d8328", "#b091a7", "#647579", "#1f8d11", "#e7eafd", "#b9660b", "#a4a644", 
+"#fec24c", "#b1168c", "#188cc1", "#7ab297", "#c949a6", "#d48295", "#eb6dc2", "#d5b0cb", 
+"#ff9ffb", "#fdb082", "#af4d44", "#a759c4", "#a9e03a", "#9ee3bd", "#5b8846", "#0d8995"];
 
 var chartsDrawn = false;
 
@@ -76,9 +92,9 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 	if(!chartsDrawn){
 		let legend = d3.select("body").select(idDiv).append("svg")
 			.attr("class", "legend")
-			.attr("width", radius * 1.5)
-			//.attr("height", radius * 2)
-			.attr("height", radius)
+			.attr("width", radius * 2)
+			.attr("height", 20 * (choices.length + 1))
+			//.attr("height", radius)
 			.selectAll("g")
 			.data(color.domain().slice().reverse())
 			.enter().append("g")
@@ -95,6 +111,21 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 			.attr("dy", ".35em")
 			.text(function(d) { return d; });
 	}
+	/*
+	let datadiv = d3.select("body").selectAll(idDiv).selectAll(".dataDiv")
+		.data(data)
+		
+		.enter().append("div")
+		.attr("class","dataDiv")
+		//.attr("width", radius * 2)
+		//.attr("height", radius * 2);
+		
+	datadiv.append("svg")
+		.attr("class", "pie")
+		.attr("width", radius * 2)
+		.attr("height", radius * 2)
+		.append("g")
+		.attr("transform", "translate(" + radius  + "," + radius + ")");*/
 
 	let svg = d3.select("body").selectAll(idDiv).selectAll(".pie")
 		.data(data)
@@ -102,10 +133,21 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 		.enter().append("svg")
 		.attr("class", "pie")
 		.attr("width", radius * 2)
-		.attr("height", radius * 2)
+		.attr("height", radius * 2 + 20 * (choices.length + 1))
 		.append("g")
 		.attr("transform", "translate(" + radius + "," + radius + ")");
+/*		
+	let svg = d3.select("body").selectAll(idDiv).select(".dataDiv").selectAll(".pie")
+		.data(data)
+		
+		.enter().append("svg")
+		.attr("class", "pie")
+		.attr("width", radius * 2)
+		.attr("height", radius * 2)
+		.append("g")
+		.attr("transform", "translate(" + radius + "," + radius + ")");*/
 	
+	//let svg = d3.select("body").selectAll(idDiv).selectAll(".pie");
 	let tooltip = d3.select("body").select(idDiv).select(".tooltip");
 	if(!chartsDrawn){
 		tooltip = d3.select("body").select(idDiv)
@@ -114,10 +156,6 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 			.style("position", "absolute")
 			.style("z-index", "10")
 			.style("visibility", "hidden")
-			.style("background-color","white")
-			.style("color","black")
-			.style("border-radius", "10px")
-			.style("padding", "10px");
 	}
 
 
@@ -147,6 +185,15 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 		.attr("dy", ".35em")
 		.style("text-anchor", "middle")
 		.text(function(d) {return d.districtName;});
+	for(let i = 0; i < choices.length; i++){
+		svg.append("text")
+			.attr("class", "voteCounts")
+			.attr("dy", ".35em")
+			.attr("x", "0")
+			.attr("y", function(){ return  radius + (i + 1) * 20;}) 
+			.style("text-anchor", "middle")
+			.text(function(d) {return choices[i]  + ": " +  d[choices[i]];});
+	}
 }
 
 
@@ -160,7 +207,9 @@ function drawBubbleChart(data, idDiv){
 	
 	var format = d3.format(",d");
 
-	var colorBubbleChart = d3.scaleOrdinal(d3.schemeCategory20c);
+	//var colorBubbleChart = d3.scaleOrdinal(d3.schemeCategory20c);
+	var colorBubbleChart = d3.scaleOrdinal()
+							.range(colors);
 
 	var pack = d3.pack()
 		.size([width, height])
@@ -191,10 +240,6 @@ function drawBubbleChart(data, idDiv){
 			.style("position", "absolute")
 			.style("z-index", "10")
 			.style("visibility", "hidden")
-			.style("background-color","white")
-			.style("color","black")
-			.style("border-radius", "10px")
-			.style("padding", "10px");
 	}
 
 	var node = svg.selectAll(".node")
@@ -262,7 +307,7 @@ function drawCharts(choices, totalVotes, districtData){
 	/*console.log(dataTotal);
 	console.log(data); 
 	console.log(dataBubble);*/ 
-	let colors = ["#98abc5", "#8a89a6", "#7b6888"];
+	//let colors = ["#98abc5", "#8a89a6", "#7b6888"];
 	drawDonutCharts(74, 44,  dataDistrict, "#districtResultCharts", choices, colors);
 	drawDonutCharts(150,100, dataTotal, "#totalResults", choices, colors );
 	if(dataBubble.length != 0)
@@ -308,12 +353,9 @@ function addContainersForCharts(){
 	$("#resultsSection").append($('<div>').attr("id","districtResultCharts"));
 	$("#resultsSection").append($('<h5>').text("Vote Counts Per District"));
 	$("#resultsSection").append($('<div>').attr("id","bubbleChart"));
-	let widthBubbleChart = 	0.7 * $( ".row.section-intro").width();
-	console.log(widthBubbleChart);
-	let leftMargin = 0.15 * $(window).width();
-	let rightMargin = 0.15 * $(window).width();
+	let widthBubbleChart = $( ".row.section-intro").width();
 	//d3.select("#bubbleChart").append("svg").attr("width","400").attr("height","400").attr("text-anchor","middle").attr("font-size","10");
-	d3.select("#bubbleChart").append("svg").attr("width", widthBubbleChart).attr("height","400").attr("text-anchor","middle").attr("font-size","10");
+	d3.select("#bubbleChart").append("svg").attr("width", widthBubbleChart).attr("height","500").attr("text-anchor","middle").attr("font-size","10");
 }
 
 function noVotes(voteOptions, votes){
