@@ -105,7 +105,7 @@ function drawBarChart(data, idDiv,choices, w, h){
 	let svg = d3.select("body").selectAll(idDiv).append("svg")
 		.attr("width", w)
 		.attr("height", h),
-    margin = {top: 20, right: 20, bottom: 30, left: 200},
+    margin = {top: 20, right: 20, bottom: 30, left: 130},
     width = w - margin.left - margin.right,
     height = h - margin.top - margin.bottom;
 	
