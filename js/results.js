@@ -68,6 +68,115 @@ var colors = ["#6FD08C", "#FFED7C", "D33F49", "#fec7f8", "#3957ff", "#c203c8" ,
 
 var chartsDrawn = false;
 
+var baseUrl = "https://blockvotenode2.mybluemix.net";
+//var baseUrl = ""
+var wasDisplayingMessage = true;
+var displayVoitingStartsMessage = false;
+var showingError = false;
+var display
+
+function wrap(text, width) {
+  text.each(function() {
+    var text = d3.select(this),
+        words = text.text().split(/\s+/).reverse(),
+        word,
+        line = [],
+        lineNumber = 0,
+        lineHeight = 1.1, // ems
+        y = text.attr("y"),
+        dy = parseFloat(text.attr("dy")),
+        tspan = text.text(null).append("tspan").attr("x", 24).attr("y", y).attr("dy", dy + "em");
+    while (word = words.pop()) {
+      line.push(word);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", 24).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+      }
+    }
+  });
+}
+
+function drawBarChart(data, idDiv,choices, w, h){
+	
+	console.log("data", data);
+	let svg = d3.select("body").selectAll(idDiv).append("svg")
+		.attr("width", w)
+		.attr("height", h),
+    margin = {top: 20, right: 20, bottom: 30, left: 200},
+    width = w - margin.left - margin.right,
+    height = h - margin.top - margin.bottom;
+	
+	let color = d3.scaleOrdinal()
+		.range(colors)
+		.domain(choices);
+		
+		tooltip = d3.select("body").select(idDiv)
+			.append("div")
+			.attr("class", "tooltip")
+			.style("position", "absolute")
+			.style("z-index", "10")
+			.style("visibility", "hidden")
+	/*let x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
+		y = d3.scaleLinear().rangeRound([height, 0]);*/
+		let y = d3.scaleBand().rangeRound([0, height]).padding(0.1),
+		x = d3.scaleLinear().rangeRound([width, 0]);
+
+	let g = svg.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	/*x.domain(data.map(function(d) { return d.name; }));
+	y.domain([0, d3.max(data, function(d) { return +d.value; })]);*/
+	x.domain([d3.max(data, function(d) { return +d.value; }), 0]);
+	y.domain(data.map(function(d) { return d.name }));
+
+	g.append("g")
+	  .attr("class", "axis axis--x")
+	  .attr("transform", "translate(0," + height + ")")
+	  //.call(d3.axisBottom(x));
+	  .call(d3.axisBottom(x).ticks(10, "%"));
+	  //.call(d3.axisBottom(y).ticks(10, "%"));
+
+	g.append("g")
+	  .attr("class", "axis axis--y")
+	  //.call(d3.axisLeft(y).ticks(10, "%"))
+	  .call(d3.axisLeft(y))
+	  //.call(d3.axisLeft(x))
+	.append("text")
+	  .attr("transform", "rotate(-90)")
+	  .attr("y", 6)
+	  .attr("dy", "0.71em")
+	  .attr("text-anchor", "end")
+	  .text("value");
+
+	g.selectAll(".bar")
+	.data(data)
+	.enter().append("rect")
+	  .attr("class", "bar")
+	  /*.attr("x", function(d) { return x(d.name); })
+	  .attr("y", function(d) { return y(+d.value); })*/
+	  .attr("x", function(d) { return 0; })
+	  .attr("y", function(d) { return y(d.name); })
+	  /*.attr("width", x.bandwidth())
+	  .attr("height", function(d) { return height - y(+d.value); })*/
+	  .attr("width", function(d) { return  x(+d.value); })
+	  .attr("height", y.bandwidth())
+	  .attr("fill", function(d){return color(d.name)})
+	  .on("mouseover", function(d){
+			d3.select(this).style("stroke","blue");
+			tooltip.text(d.name + ": " + d.total);
+			return tooltip.style("visibility", "visible");
+		})
+		.on("mousemove", function(event){return tooltip.style("top", (d3.event.pageY - 15)+"px").style("left",(d3.event.pageX +10)+"px");})
+		.on("mouseout", function(){
+			d3.select(this).style("stroke", "white");
+			return tooltip.style("visibility", "hidden");
+		});
+
+}
+
 function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 	let padding = 10;
 
@@ -89,6 +198,7 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 			return {name: name, value: +d[name]};
 		});
 	});
+
 	if(!chartsDrawn){
 		let legend = d3.select("body").select(idDiv).append("svg")
 			.attr("class", "legend")
@@ -109,7 +219,17 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 			.attr("x", 24)
 			.attr("y", 9)
 			.attr("dy", ".35em")
-			.text(function(d) { return d; });
+			.text(function(d) { return d; })
+			//.call(wrap, radius*2);
+			
+/*		
+		legend.append("text")
+			.data(splitChoices)
+			.enter().append("tspan")
+			.attr("x", 24)
+			.attr("y", 9)
+			.attr("dy", ".35em")
+			.text(function(d) { return d; });*/
 	}
 	/*
 	let datadiv = d3.select("body").selectAll(idDiv).selectAll(".dataDiv")
@@ -281,9 +401,19 @@ function drawBubbleChart(data, idDiv){
 
 function drawCharts(choices, totalVotes, districtData){
 	let dataTotal = [];
-	dataTotal[0] = {districtName:"Total"};
+	/*dataTotal[0] = {districtName:"Total"};
 	for(let i in choices){
 		dataTotal[0][choices[i]] = totalVotes[choices[i]];
+	}*/
+	let voteTotal = 0;
+	for(let i in choices){
+		voteTotal = voteTotal + ( +totalVotes[choices[i]]);
+	}
+	console.log("voteTotal", voteTotal);
+	for(let i in choices){
+		let voteRatio = (+totalVotes[choices[i]]) / voteTotal;
+		dataEntry = {name:choices[i], value:voteRatio, total:totalVotes[choices[i]]};
+		dataTotal.push(dataEntry);
 	}
 	let dataDistrict = [];
 	let dataBubble = [];
@@ -303,13 +433,21 @@ function drawCharts(choices, totalVotes, districtData){
 		if(dataEntryBubbleChart.votes != 0)
 			dataBubble.push(dataEntryBubbleChart);
 	}
+	
+	let width =  0.4 * $( ".row.section-intro").width();
+	if(width < 150 * 2)
+	{	
+		if($( ".row.section-intro").width() < 300)
+			width = $( ".row.section-intro").width() 
+		else
+			width = 150 * 2;
+	}
+	
 	console.log("data district ", dataDistrict );
-	/*console.log(dataTotal);
-	console.log(data); 
-	console.log(dataBubble);*/ 
-	//let colors = ["#98abc5", "#8a89a6", "#7b6888"];
-	drawDonutCharts(74, 44,  dataDistrict, "#districtResultCharts", choices, colors);
-	drawDonutCharts(150,100, dataTotal, "#totalResults", choices, colors );
+	//drawDonutCharts(74, 44,  dataDistrict, "#districtResultCharts", choices, colors);
+	drawDonutCharts(width/2, 0.7 * (width/2),  dataDistrict, "#districtResultCharts", choices, colors);
+	//drawDonutCharts(150,100, dataTotal, "#totalResults", choices, colors );
+	drawBarChart(dataTotal, "#totalResults",choices, $( ".row.section-intro").width(), 500);
 	if(dataBubble.length != 0)
 		drawBubbleChart(dataBubble, "#bubbleChart");
 	chartsDrawn = true; 
@@ -324,8 +462,10 @@ function poll(){
 }
 
 function deleteCharts(){
-	let svg = d3.select("body").selectAll("#totalResults").selectAll(".pie");
-	svg.remove();
+	/*let svg = d3.select("body").selectAll("#totalResults").selectAll(".pie");
+	svg.remove();*/
+	let svg = d3.select("body").selectAll("#totalResults");
+	svg.selectAll("*").remove();
 	 svg = d3.select("body").selectAll("#districtResultCharts").selectAll(".pie");
 	svg.remove();
 	let node =  d3.select("#bubbleChart").select("svg").selectAll(".node");
@@ -343,7 +483,7 @@ function removeMessage(){
 }*/
 
 function displayMessage(message){
-	$("#resultsSection").append($('<h1>').text(message).addClass("resultsMessage"));
+	$("#resultsSection").append($('<h3>').text(message).addClass("resultsMessage"));
 }
 
 function addContainersForCharts(){
@@ -374,7 +514,7 @@ function afterDate(endDateString){
 }
 
 function addCountDown(endTimeStr){
-	$("#resultsSection").append($('<h1>').attr("id","countDown"));
+	$("#resultsSection").append($('<h3>').attr("id","countDown"));
 	let tick = function(){
 		let date1 = new Date(endTimeStr);
 		let date2 = new Date();
@@ -387,18 +527,23 @@ function addCountDown(endTimeStr){
 			let mins = Math.floor((timeDiff / ( 1000 * 60)));
 			timeDiff -= mins * 1000 * 60;
 			let sec = Math.floor(timeDiff / 1000);
-			$("#countDown").text(days +":" +hours + ":" + mins + ":" + sec );
+			$("#countDown").text(days +" d, " +hours + " h, " + mins + " min, " + sec + " sec" );
 		}
 		timeout = setTimeout(tick, 1000);
 	}
 	tick();
 }
 
-var baseUrl = "https://blockvotenode2.mybluemix.net";
-//var baseUrl = ""
-var wasDisplayingMessage = true;
-var displayVoitingStartsMessage = false;
-var display
+function showError(){
+	if(!chartsDrawn){
+			emptyResultsSection();
+			displayMessage("Sorry there was a problem getting the voting results.");
+			wasDisplayingMessage = true;
+		}
+		else{
+			window.alert("Problem getting voting results, results are no longer live");
+		}
+}
 
 //perform multiple ajax calls in a loop if the server responds with error.
 function multAjaxCallResults(count, finalCount){
@@ -422,7 +567,7 @@ function multAjaxCallResults(count, finalCount){
 					
 					if(response.AllowLiveResults === "no" && !afterDate(response.EndTime)){
 						emptyResultsSection();
-						displayMessage("Come back when the election is over to see results");
+						displayMessage("Live results are not enabled. Come back when the voting is over to see results");
 						displayMessage("Time to end of election");
 						addCountDown(response.EndTime);
 						wasDisplayingMessage = true;
@@ -452,8 +597,11 @@ function multAjaxCallResults(count, finalCount){
 							url:baseUrl + "/readDistrict",
 							crossDomain: true,
 							data: { "district":districts[i]},
-							failure:function(obj, status, textStatus){
+							error:function(obj, status, textStatus){
 								console.log("failure when getting district data");
+								/*if(!showError)
+									showError();
+								showError = true;*/
 							}
 							
 						});
@@ -468,7 +616,7 @@ function multAjaxCallResults(count, finalCount){
 							{
 								dataOK = false;
 								count++;
-								console.log("here");
+								console.log("here " + count);
 								multAjaxCallResults(count, finalCount);
 							}
 						}
@@ -484,10 +632,14 @@ function multAjaxCallResults(count, finalCount){
 					multAjaxCallResults(count, finalCount);
 				}
 			},
-			failure:function(obj, status, textStatus){
+			error:function(obj, status, textStatus){
 				console.log("failure when getting results");
+				//showError();
 			}
 		});
+	}
+	else{
+		showError();
 	}
 }
 	
