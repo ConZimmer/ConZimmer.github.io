@@ -75,37 +75,13 @@ var displayVoitingStartsMessage = false;
 var showingError = false;
 var display
 
-function wrap(text, width) {
-  text.each(function() {
-    var text = d3.select(this),
-        words = text.text().split(/\s+/).reverse(),
-        word,
-        line = [],
-        lineNumber = 0,
-        lineHeight = 1.1, // ems
-        y = text.attr("y"),
-        dy = parseFloat(text.attr("dy")),
-        tspan = text.text(null).append("tspan").attr("x", 24).attr("y", y).attr("dy", dy + "em");
-    while (word = words.pop()) {
-      line.push(word);
-      tspan.text(line.join(" "));
-      if (tspan.node().getComputedTextLength() > width) {
-        line.pop();
-        tspan.text(line.join(" "));
-        line = [word];
-        tspan = text.append("tspan").attr("x", 24).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-      }
-    }
-  });
-}
-
 function drawBarChart(data, idDiv,choices, w, h){
-	
+	d3.select("body").selectAll(idDiv).attr("width", w).attr("height",h);
 	console.log("data", data);
 	let svg = d3.select("body").selectAll(idDiv).append("svg")
 		.attr("width", w)
 		.attr("height", h),
-    margin = {top: 20, right: 20, bottom: 30, left: 130},
+    margin = {top: 20, right: 0, bottom: 30, left: 112},
     width = w - margin.left - margin.right,
     height = h - margin.top - margin.bottom;
 	
@@ -317,13 +293,19 @@ function drawDonutCharts(radius, innerRadius, data, idDiv, choices, colors){
 }
 
 
-function drawBubbleChart(data, idDiv){
-	var div = d3.select(idDiv);
+function drawBubbleChart(data, idDiv, width, height){
+	var div = d3.select(idDiv).attr("width",width).attr("height", height);
 	
-	//var svg = d3.select("body").select(idDiv).select("svg"),
-	var svg = d3.select(idDiv).select("svg"),
+	/*var svg = d3.select(idDiv).select("svg"),
 	width = +svg.attr("width"),
-		height = +svg.attr("height");
+		height = +svg.attr("height");*/
+	
+	var svg = d3.select(idDiv).append("svg")
+		.attr("id", "bubbleChartSVG")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("text-anchor","middle")
+		.attr("font-size","10");
 	
 	var format = d3.format(",d");
 
@@ -449,7 +431,7 @@ function drawCharts(choices, totalVotes, districtData){
 	//drawDonutCharts(150,100, dataTotal, "#totalResults", choices, colors );
 	drawBarChart(dataTotal, "#totalResults",choices, $( ".row.section-intro").width(), 500);
 	if(dataBubble.length != 0)
-		drawBubbleChart(dataBubble, "#bubbleChart");
+		drawBubbleChart(dataBubble, "#bubbleChart", $( ".row.section-intro").width(), 500);
 	chartsDrawn = true; 
 }
 
@@ -468,7 +450,7 @@ function deleteCharts(){
 	svg.selectAll("*").remove();
 	 svg = d3.select("body").selectAll("#districtResultCharts").selectAll(".pie");
 	svg.remove();
-	let node =  d3.select("#bubbleChart").select("svg").selectAll(".node");
+	let node =  d3.select("#bubbleChart").select("#bubbleChartSVG");
 	node.remove();
 	
 }
@@ -495,7 +477,7 @@ function addContainersForCharts(){
 	$("#resultsSection").append($('<div>').attr("id","bubbleChart"));
 	let widthBubbleChart = $( ".row.section-intro").width();
 	//d3.select("#bubbleChart").append("svg").attr("width","400").attr("height","400").attr("text-anchor","middle").attr("font-size","10");
-	d3.select("#bubbleChart").append("svg").attr("width", widthBubbleChart).attr("height","500").attr("text-anchor","middle").attr("font-size","10");
+	//d3.select("#bubbleChart").append("svg").attr("width", widthBubbleChart).attr("height","500").attr("text-anchor","middle").attr("font-size","10");
 }
 
 function noVotes(voteOptions, votes){
@@ -543,6 +525,14 @@ function showError(){
 		else{
 			window.alert("Problem getting voting results, results are no longer live");
 		}
+}
+
+
+var options, totalVotes, args;
+
+window.onresize = function(event){
+	deleteCharts();
+	drawCharts(options, totalVotes, args);
 }
 
 //perform multiple ajax calls in a loop if the server responds with error.
@@ -622,7 +612,10 @@ function multAjaxCallResults(count, finalCount){
 						}
 						if(dataOK){
 							deleteCharts();
-							drawCharts(voteOptions, response.TotalVotes , arguments);
+							options = voteOptions;
+							totalVotes = response.TotalVotes;
+							args = arguments;
+							drawCharts(options, totalVotes , args);
 							poll();
 						}
 					});
